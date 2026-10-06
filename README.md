@@ -1,16 +1,96 @@
-# React + Vite
+# MAX Chat
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Простой веб-интерфейс для отправки и получения текстовых сообщений в мессенджере MAX через сервис [GREEN-API](https://green-api.com/max). Внешний вид чата выполнен по образцу [web.max.ru](https://web.max.ru/).
 
-Currently, two official plugins are available:
+Приложение работает полностью на фронтенде: собственного бэкенда нет, все запросы идут напрямую в GREEN-API.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Демо
 
-## React Compiler
+- Работающее приложение: `<ссылка на деплой>`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Возможности
 
-## Expanding the ESLint configuration
+- Вход по учётным данным GREEN-API (`idInstance`, `apiTokenInstance`) с проверкой статуса инстанса.
+- Создание нового чата по номеру телефона получателя (проверка наличия аккаунта MAX).
+- Отправка текстовых сообщений (метод `SendMessage`) со статусами «отправляется», «отправлено» и «не отправлено».
+- Получение ответов через HTTP API (методы `ReceiveNotification` и `DeleteNotification`) и отображение их в чате.
+- Автоматическое создание чата, если пишет собеседник, которого ещё нет в списке.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Технологии
+
+- React
+- Vite
+- JavaScript
+- GREEN-API (MAX)
+
+## Подготовка: учётные данные GREEN-API
+
+1. Зарегистрируйтесь в [личном кабинете GREEN-API](https://console.green-api.com/).
+2. Создайте инстанс типа **MAX**.
+3. Авторизуйте инстанс: в приложении MAX откройте «Устройства» и войдите по QR-коду из кабинета. Статус инстанса должен стать «Авторизован».
+4. Скопируйте `idInstance` и `apiTokenInstance` со страницы инстанса.
+5. В настройках инстанса («Изменить») убедитесь, что:
+   - поле `webhookUrl` пустое (иначе получение через HTTP API не работает);
+   - включены уведомления о входящих сообщениях (`incomingWebhook`).
+6. Сохраните настройки. Применяются они в течение нескольких минут.
+
+Для проверки переписки понадобится второй аккаунт MAX, с которого можно отвечать.
+
+## Локальный запуск
+
+Требуется установленный [Node.js](https://nodejs.org/) (актуальная LTS-версия) и npm.
+
+```bash
+git clone <ссылка на репозиторий>
+cd <папка проекта>
+npm install
+npm run dev
+```
+
+После запуска откройте адрес, который выведет Vite (обычно `http://localhost:5173`).
+
+Сборка для продакшена:
+
+```bash
+npm run build
+npm run preview
+```
+
+### Необязательная настройка
+
+По умолчанию запросы идут на `https://api.green-api.com`. Если нужно использовать другой хост (например, `apiUrl` из карточки инстанса), создайте файл `.env` в корне проекта:
+
+```
+VITE_GREEN_API_URL=https://XXXX.api.green-api.com
+```
+
+## Как пользоваться
+
+1. Введите `idInstance` и `apiTokenInstance` и нажмите «Войти».
+2. Введите номер телефона получателя (например, `+7 900 123-45-67`) и нажмите «Создать чат».
+3. Напишите сообщение и отправьте его.
+4. Когда получатель ответит в MAX, ответ появится в чате.
+
+## Структура проекта
+
+```
+src/
+  api/greenApi.js              запросы к GREEN-API
+  components/
+    LoginForm.jsx              экран входа
+    ChatPage.jsx               состояние чатов и сообщений
+    Sidebar.jsx                список чатов
+    NewChatForm.jsx            создание чата по номеру
+    ChatWindow.jsx             окно переписки и поле ввода
+  hooks/useNotifications.js    опрос очереди входящих уведомлений
+  utils/phone.js               нормализация номера телефона
+  App.jsx                      вход и выход
+```
+
+## Ограничения
+
+- Поддерживаются только текстовые сообщения и только личные чаты.
+- Номера телефонов: только РФ (код 7) и РБ (код 375) — это ограничение метода `CheckAccount`.
+- Чаты и история сообщений хранятся только в памяти и пропадают после перезагрузки страницы. Данные для входа сохраняются в `localStorage` браузера.
+- Приложение нужно открывать в одной вкладке: несколько вкладок будут отбирать друг у друга уведомления из очереди.
+- Входящие уведомления хранятся в очереди GREEN-API 24 часа, поэтому при первом запуске могут появиться недавние сообщения.

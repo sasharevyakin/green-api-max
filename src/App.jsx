@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import LoginForm from './components/LoginForm';
+import ChatPage from './components/ChatPage';
 
 const STORAGE_KEY = 'greenApiCredentials';
 
@@ -28,10 +29,5 @@ export default function App() {
     return <LoginForm onLogin={handleLogin} />;
   }
 
-  return (
-    <div>
-      <p>Вы вошли. Инстанс: {credentials.idInstance}</p>
-      <button onClick={handleLogout}>Выйти</button>
-    </div>
-  );
+  return <ChatPage credentials={credentials} onLogout={handleLogout} />;
 }

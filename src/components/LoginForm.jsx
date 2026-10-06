@@ -28,7 +28,7 @@ export default function LoginForm({ onLogin }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="login-form" onSubmit={handleSubmit}>
       <h2>Вход в чат</h2>
       <input
         placeholder="idInstance"
